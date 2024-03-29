@@ -15,49 +15,35 @@
         <h1 class="mb-9 text-3xl font-black text-brand-darkgray">Listagem</h1>
 
         <div class="flex gap-16">
-          <div class="min-w-[266px]">
-            <h2 class="text-2xl font-medium mb-4">Filtros</h2>
-
-            <!-- FeedbacksFilter -->
-            <div class="space-y-1">
-              <div class="hover:bg-gray-100 rounded px-4 py-1 flex items-center justify-between" v-for="filterOption in feedbacksFilters" :key="filterOption.type">
-                <div class="flex items-center space-x-2">
-                  <span class="w-1 h-1 bg-blue-500 rounded-full"></span>
-                  <span class="font-medium text-sm">{{ filterOption.type }}</span>
-                </div>
-                <span class="font-black text-sm text-[#8296FB] opacity-70">200</span>
-              </div>
-            </div>
-
-          </div>
+          <feedback-filter :feedbacks-filters="feedbacksFilters" :on-filter="setFilter" />
+          
           <div class="flex-1">
             <div class="space-y-6">
-              <div v-for="feedback in new Array(10).fill(0)" :key="feedback" class="py-4 px-6 space-y-4 bg-gray-50 rounded">
+              <div v-for="feedback in state.feedbacks" :key="feedback.id" class="py-4 px-6 space-y-4 bg-gray-50 rounded">
                 <header class="flex items-center justify-between">
                   <span class="px-2 py-1 font-black rounded-full bg-red-400 text-xs text-white uppercase">
-                    problema 
+                    {{ feedback.type }}
                   </span>
                   <time class="text-sm text-gray-500 font-regular" datetime="">20 segundos atrás</time>
                 </header>
 
                 <strong class="block font-medium text-lg">
-                  Lorem ipsum dolor sit amet consectetur, adipisicing elit. 
-                  Voluptates saepe a repellat reiciendis, esse atque quo quia quisquam asperiores in?
+                  {{ feedback.text }}
                 </strong>
                 
                 <div class="grid grid-cols-2">
                   <div class="flex flex-col">
                     <p class="uppercase text-xs font-bold text-gray-500">página</p>
-                    <a class="font-medium text-sm" >https://deixeumfeedback.com/ajuda</a>
+                    <a class="font-medium text-sm" >{{ feedback.type }}</a>
                   </div>
                   <div class="flex flex-col">
                     <p class="uppercase text-xs font-bold text-gray-500">Usuário</p>
-                    <p class="font-medium text-sm">g0faklsdfkl</p>
+                    <p class="font-medium text-sm truncate max-w-xs">{{ feedback.fingersprint }}</p>
                   </div>
                 </div>
                 <div class="flex flex-col">
                   <p class="uppercase text-xs font-bold text-gray-500">dispositivo</p>
-                  <p class="font-medium text-sm">Chrome 85.0, macOS 10.14</p>
+                  <p class="font-medium text-sm">{{ feedback.device }}</p>
                 </div>
               </div>
             </div>
@@ -69,24 +55,99 @@
 
 <script setup>
 import HeaderLogged from '@/components/HeaderLogged'
+import FeedbackFilter from './FeedbackFilter.vue';
+
+import services from "../../services"
+import { reactive, watchEffect } from "vue";
+import { useRoute, useRouter } from 'vue-router';
+
+const router = useRouter()
+const route = useRoute()
+
+const state = reactive({
+  isLoading: false,
+  hasError: false,
+  feedbacks: [],
+}) 
 
 const feedbacksFilters = [
   {
-    type: "Todos",
+    id: "ALL",
+    text: "Todos",
     color: ""
   },
   {
-    type: "Problemas",
+    id: "ISSUE",
+    text: "Problemas",
     color: ""
   },
   {
-    type: "Ideias",
+    id: "IDEA",
+    text: "Ideias",
     color: ""
   },
   {
-    type: "Outros",
+    id: "OTHER",
+    text: "Outros",
     color: ""
   }
 ]
+
+const validFilters = feedbacksFilters.map(filter => filter.id)
+
+async function fetchFeedbacks() {
+  state.isLoading = true
+  try {
+    const response = await services.feedbacks.getFeedbacks()
+    state.feedbacks = response.data
+  } catch (error) {
+    console.error(error)
+    state.hasError = true
+  } finally {
+    state.isLoading = false
+  }
+}
+
+async function fetchFeedbacksByType(type) {
+  state.isLoading = true
+  try {
+    const response = await services.feedbacks.filterByType(type)
+    state.feedbacks = response.data
+  } catch (error) {
+    console.error(error)
+    state.hasError = true
+  } finally {
+    state.isLoading = false
+  }
+}
+
+fetchFeedbacks()
+
+function setFilter(type) {
+  if (validFilters.includes(type)) {
+    setQuery(type)
+  }
+}
+
+function setQuery(type) {
+  router.push({ query: { type } })
+}
+
+function cleanQuery() {
+  router.push({ query: {} })
+}
+
+watchEffect(async () => {
+  const type = route.query.type
+  if (type && validFilters.includes(type)) {
+    if (type === "ALL") {
+      fetchFeedbacks()
+    } else {
+      fetchFeedbacksByType(type)
+    }
+    cleanQuery()
+  }
+})
+
 
 </script>
