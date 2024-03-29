@@ -6,6 +6,7 @@ from .filters import FeedbacksFilter
 from ..models import Feedback
 from .serializers import FeedbackSerializer
 
+
 class FeedbackViewSet(viewsets.ModelViewSet):
     queryset = Feedback.objects.all()
     serializer_class = FeedbackSerializer
@@ -13,10 +14,8 @@ class FeedbackViewSet(viewsets.ModelViewSet):
     filterset_class = FeedbacksFilter
 
     def get_queryset(self):
-        """ Only feedbacks from the user currently logged in are returned"""
         return self.queryset.filter(user=self.request.user)
 
     # Pagination
     # Ordering
     # Throttling
-    
