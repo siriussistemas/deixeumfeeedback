@@ -14,7 +14,7 @@
     <div class="flex flex-col w-4/5 max-w-6xl py-10">
       <h1 class="text-3xl font-black text-brand-darkgray">Instalação e configuração</h1>
 
-      <p class="mt-10 text-lg text-gray-800 font-regular">Este aqui é a sua chave de api</p>
+      <p class="mt-8 text-lg text-gray-800 font-regular">Este aqui é a sua chave de api</p>
 
       <content-loader
         v-if="store.global.isLoading || state.isLoading"
@@ -25,10 +25,10 @@
 
       <div
         v-else
-        class="flex py-3 pl-5 mt-2 rounded justify-between items-center bg-brand-gray w-full lg:w-1/2"
+        class="flex py-3 pl-5 mt-3 rounded justify-between items-center bg-brand-gray w-full lg:w-1/2 overflow-x-auto"
       >
         <span v-if="state.hasError">Erro ao carregar a Api key</span>
-        <span v-else>{{ store.user.currentUser.api_key}}</span>
+        <span class="whitespace-nowrap" v-else>{{ store.user.currentUser.api_key}}</span>
 
         <div class="flex ml-20 mr-5" v-if="!state.hasError">
           <icon
@@ -48,7 +48,7 @@
         </div>
       </div>
 
-      <p class="mt-5 text-lg text-gray-800 font-regular">
+      <p class="mt-6 text-lg text-gray-800 font-regular">
         Coloque o script abaixo no seu site para começar a receber feedbacks
       </p>
 
@@ -60,7 +60,7 @@
       />
       <div
         v-else
-        class="py-3 pl-5 pr-20 mt-2 rounded bg-brand-gray w-full lg:w-2/3 overflow-x-scroll"
+        class="py-3 pl-5 pr-20 mt-3 rounded bg-brand-gray w-full lg:w-2/3 overflow-x-scroll"
       >
         <span v-if="state.hasError">Erro ao carregar o script</span>
         <pre v-else>&lt;script defer async onload="init('{{ store.user.currentUser.api_key }}')" src="https://deixeumfeedback.widget.com.br/init.js"&gt;&lt;/script&gt;</pre>
