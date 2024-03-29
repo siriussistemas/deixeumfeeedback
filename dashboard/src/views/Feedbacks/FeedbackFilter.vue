@@ -1,7 +1,16 @@
 <script setup>
+import { computed } from 'vue';
+import { useRoute } from 'vue-router';
+
 defineProps({
   onFilter: Function,
   feedbacksFilters: Array
+})
+
+const route = useRoute()
+
+const filterTypeActive = computed(() => {
+  return route.query.type || 'ALL'
 })
 
 </script>
@@ -13,14 +22,18 @@ defineProps({
     <div 
       v-for="filterOption in feedbacksFilters" 
       :key="filterOption.id"
-      @click="onFilter(filterOption.id)"
-      class="hover:bg-gray-100 rounded px-4 py-1 flex items-center justify-between"
+      @click="onFilter(filterOption.type)"
+      class="rounded px-4 py-1 flex items-center justify-between"
+      :class="{'bg-gray-100': filterOption.type === filterTypeActive}"
     >
     <div class="flex items-center space-x-2">
-      <span class="w-1 h-1 bg-blue-500 rounded-full"></span>
+      <span class="w-[5px] h-[5px] rounded-full"
+        :class="filterOption.color"
+        >
+      </span>
       <span class="font-medium text-sm">{{ filterOption.text }}</span>
     </div>
-    <span class="font-black text-sm text-[#8296FB] opacity-70">200</span>
+    <span class="font-black text-sm opacity-70">{{ filterOption.count }}</span>
     </div>
   </div>
 </div>

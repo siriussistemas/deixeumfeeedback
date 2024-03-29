@@ -10,5 +10,12 @@ export default httpClient => ({
         return {
             data: response.data
         }
+    },
+
+    getFiltersData: async () => {
+        const response = await httpClient.get('/feedbacks/filters_data')
+        return {
+            data: response.data
+        }
     }
 })
