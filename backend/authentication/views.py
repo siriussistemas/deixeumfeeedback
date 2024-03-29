@@ -17,9 +17,7 @@ def register(request):
     if not User.objects.filter(email=email).exists():
         serializer.is_valid(raise_exception=True)
         password = data.get("password")
-        user = serializer.save(password=make_password(password))
-        user.create_api_key()
-
+        serializer.save(password=make_password(password))
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     return Response(
         {"message": "A User with this email already exists"},

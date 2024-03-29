@@ -45,7 +45,9 @@ class User(AbstractUser):
     name = models.CharField("name", max_length=255, blank=True)
     username = models.CharField("username", max_length=255, unique=True)
     email = models.EmailField("email address", unique=True)
-
+    api_key = models.UUIDField(
+        "api key", default=uuid.uuid4, editable=True, unique=True
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -53,16 +55,3 @@ class User(AbstractUser):
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = []
-
-    def create_api_key(self):
-        return ApiKey.objects.create(user=self)
-
-
-class ApiKey(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="api_keys")
-    apiKey = models.UUIDField(default=uuid.uuid4, editable=True, unique=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    def __str__(self):
-        return self.apiKey

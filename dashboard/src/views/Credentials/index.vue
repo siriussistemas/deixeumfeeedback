@@ -13,6 +13,7 @@
   <div class="flex justify-center w-full h-full">
     <div class="flex flex-col w-4/5 max-w-6xl py-10">
       <h1 class="text-3xl font-black text-brand-darkgray">Instalação e configuração</h1>
+
       <p class="mt-10 text-lg text-gray-800 font-regular">Este aqui é a sua chave de api</p>
 
       <content-loader
@@ -21,12 +22,14 @@
         width="600px"
         height="50px"
       />
+
       <div
         v-else
         class="flex py-3 pl-5 mt-2 rounded justify-between items-center bg-brand-gray w-full lg:w-1/2"
       >
-        <span v-if="state.hasError">Erro ao carregar a apikey</span>
-        <span v-else id="apikey">{{ store.user.currentUser.api_keys[0].apiKey }}</span>
+        <span v-if="state.hasError">Erro ao carregar a Api key</span>
+        <span v-else>{{ store.user.currentUser.api_key}}</span>
+
         <div class="flex ml-20 mr-5" v-if="!state.hasError">
           <icon
             @click="handleCopy"
@@ -73,79 +76,69 @@
   </div>
 </template>
 
-<script>
-import { reactive, watch } from 'vue'
-import { useToast } from 'vue-toastification'
-import Icon from '../../components/Icon'
-import useStore from '../../composables/useStore'
-
-// import services from '../../services'
-// import { setApiKey } from '../../store/user'
-
+<script setup>
 import HeaderLogged from '@/components/HeaderLogged'
 import ContentLoader from '../../components/ContentLoader'
+import Icon from '../../components/Icon'
 
-export default {
-  components: { ContentLoader, HeaderLogged, Icon },
-  setup() {
-    const store = useStore()
-    const toast = useToast()
-    const state = reactive({
-      hasError: false,
-      isLoading: false
-    })
+import { reactive, watch } from 'vue'
+import { useToast } from 'vue-toastification'
+import { setApiKey } from '../../store/user'
+import useStore from '../../composables/useStore'
+import services from '../../services'
 
-    watch(
-      () => store.user.currentUser,
-      () => {
-        if (!store.global.isLoading && !store.user.currentUser.api_keys) {
-          handleError(true)
-        }
-      }
-    )
+const store = useStore()
+const toast = useToast()
+const state = reactive({
+  hasError: false,
+  isLoading: false
+})
 
-    function handleError(error) {
-      state.isLoading = false
-      state.hasError = !!error
-    }
+const brandColors = {
+  main: '#EF4983',
+  gray: '#F9F9F9',
+  info: '#8296FB',
+  graydark: '#C0BCB0',
+  warning: '#E4B52E',
+  danger: '#F88676'
+}
 
-    // async function handleGenerateApikey() {
-    //   try {
-    //     state.isLoading = true
-    //     const { data } = await services.users.generateApikey()
+function handleError(error) {
+  state.isLoading = false
+  state.hasError = !!error
+}
 
-    //     setApiKey(data.apiKey)
-    //     state.isLoading = false
-    //   } catch (error) {
-    //     handleError(error)
-    //   }
-    // }
+async function handleCopy() {
+  toast.clear()
 
-    async function handleCopy() {
-      toast.clear()
-
-      try {
-        await navigator.clipboard.writeText(store.user.currentUser.api_keys[0].apiKey)
-        toast.success('Copiado!')
-      } catch (error) {
-        handleError(error)
-      }
-    }
-
-    return {
-      state,
-      store,
-      // handleGenerateApikey,
-      handleCopy,
-      brandColors: {
-        main: '#EF4983',
-        gray: '#F9F9F9',
-        info: '#8296FB',
-        graydark: '#C0BCB0',
-        warning: '#E4B52E',
-        danger: '#F88676'
-      }
-    }
+  try {
+    await navigator.clipboard.writeText("implement this")
+    toast.success('API key copiada para a clipboard!')
+  } catch (error) {
+    handleError(error)
   }
 }
+
+async function handleGenerateNewApikey() {
+  try {
+    state.isLoading = true
+
+    const { data } = await services.users.generateApikey()
+
+    setApiKey(data.apiKey)
+
+    state.isLoading = false
+  } catch (error) {
+    handleError(error)
+  }
+}
+
+watch(
+  () => store.user.currentUser,
+  () => {
+    if (!store.global.isLoading && !store.user.currentUser.api_keys) {
+      handleError(true)
+    }
+  }
+)
 </script>

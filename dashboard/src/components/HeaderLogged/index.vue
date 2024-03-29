@@ -38,9 +38,6 @@ export default {
     const store = useStore('user');
 
     const logoutLabel = computed(() => {
-      if(store.currentUser.name){
-        return '...'
-      }
       return `${store.currentUser.username} (sair)` 
     })
 
