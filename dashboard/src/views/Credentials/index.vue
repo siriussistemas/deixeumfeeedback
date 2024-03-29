@@ -38,13 +38,13 @@
             size="24"
             class="cursor-pointer"
           />
-          <icon
+          <!-- <icon
             id="generate-apikey"
             name="loading"
             :color="brandColors.graydark"
             size="24"
             class="cursor-pointer ml-3"
-          />
+          /> -->
         </div>
       </div>
 
@@ -63,14 +63,7 @@
         class="py-3 pl-5 pr-20 mt-2 rounded bg-brand-gray w-full lg:w-2/3 overflow-x-scroll"
       >
         <span v-if="state.hasError">Erro ao carregar o script</span>
-        <pre v-else>
-&lt;script
-  defer
-  async
-  onload="init('{{ store.user.currentUser.apiKey }}')"
-  src="https://Jackson-Vieira-feedbacker-widget.netlify.app/init.js"
-&gt;&lt;/script&gt;
-        </pre>
+        <pre v-else>&lt;script defer async onload="init('{{ store.user.currentUser.api_key }}')" src="https://deixeumfeedback.widget.com.br/init.js"&gt;&lt;/script&gt;</pre>
       </div>
     </div>
   </div>
@@ -83,9 +76,9 @@ import Icon from '../../components/Icon'
 
 import { reactive, watch } from 'vue'
 import { useToast } from 'vue-toastification'
-import { setApiKey } from '../../store/user'
+// import { setApiKey } from '../../store/user'
 import useStore from '../../composables/useStore'
-import services from '../../services'
+// import services from '../../services'
 
 const store = useStore()
 const toast = useToast()
@@ -112,26 +105,26 @@ async function handleCopy() {
   toast.clear()
 
   try {
-    await navigator.clipboard.writeText("implement this")
+    await navigator.clipboard.writeText(store.user.currentUser.api_key)
     toast.success('API key copiada para a clipboard!')
   } catch (error) {
     handleError(error)
   }
 }
 
-async function handleGenerateNewApikey() {
-  try {
-    state.isLoading = true
+// async function handleGenerateNewApikey() {
+//   try {
+//     state.isLoading = true
 
-    const { data } = await services.users.generateApikey()
+//     const { data } = await services.users.generateApikey()
 
-    setApiKey(data.apiKey)
+//     setApiKey(data.apiKey)
 
-    state.isLoading = false
-  } catch (error) {
-    handleError(error)
-  }
-}
+//     state.isLoading = false
+//   } catch (error) {
+//     handleError(error)
+//   }
+// }
 
 watch(
   () => store.user.currentUser,
