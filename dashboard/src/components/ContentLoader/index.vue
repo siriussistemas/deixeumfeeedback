@@ -11,44 +11,40 @@
   </div>
 </template>
 
-<script>
+<script setup>
 import { computed } from 'vue'
 
-export default {
-  props: {
-    maxWidth: {
-      default: 100,
-      type: Number
-    },
-    minWidth: {
-      default: 80,
-      type: Number
-    },
-    animationDuration: {
-      type: String,
-      default: '1.6s'
-    },
-    height: {
-      default: '1rem',
-      type: String
-    },
-    width: {
-      default: '1rem',
-      type: String
-    }
+const props = defineProps({
+  maxWidth: {
+    default: 100,
+    type: Number
   },
-  setup (props) {
-    const computedWidth = computed(() => {
-      const value = Math.random() * (props.width - props.minWidth)
-      return props.width ?? `${Math.floor(value + props.minWidth)}%`
-    })
-
-    return { computedWidth }
+  minWidth: {
+    default: 80,
+    type: Number
+  },
+  animationDuration: {
+    type: String,
+    default: '1.6s'
+  },
+  height: {
+    default: '1rem',
+    type: String
+  },
+  width: {
+    default: '1rem',
+    type: String
   }
-}
+})
+
+const computedWidth = computed(() => {
+  const value = Math.random() * (props.width - props.minWidth)
+  return props.width ?? `${Math.floor(value + props.minWidth)}%`
+})
+
 </script>
 
-<style lang="postcss" scoped>
+<style scoped>
 @keyframes shimmer {
   100% {
     transform: translateX(100%);
@@ -61,6 +57,7 @@ export default {
   overflow: hidden;
   background: #f6f7f8;
 }
+
 .content-loader--fx {
   position: absolute;
   top: 0;

@@ -12,71 +12,60 @@
 
   <div class="flex justify-center w-full h-full">
     <div class="flex flex-col w-4/5 max-w-6xl py-10">
-        <h1 class="mb-9 text-3xl font-black text-brand-darkgray">Listagem</h1>
+      <h1 class="mb-9 text-3xl font-black text-brand-darkgray">Listagem</h1>
 
-        <div class="flex gap-16">
-          <feedback-filter :feedbacks-filters="FiltersDataWithColors" :on-filter="setFilter" :filter-type-active="filterTypeActive" />
-          
-          <div class="flex-1">
-            <div class="space-y-6">
-              <div v-for="feedback in state.feedbacks" :key="feedback.id" class="py-4 px-6 space-y-4 bg-gray-50 rounded">
-                <header class="flex items-center justify-between">
-                  <span class="px-2 py-1 font-black rounded-full text-xs text-white uppercase"
-                    :class="getFilterTypeColorAndText(feedback.type).color" 
-                  >
-                    {{ feedback.type }}
-                  </span>
-                  <time class="text-sm text-gray-500 font-regular" datetime="">
-                    {{ formatDistanceToNow(new Date(feedback.created_at), {locale: ptBR, addSuffix: true}) }}
-                  </time>
-                </header>
+      <div class="flex gap-16">
 
-                <strong class="block font-medium text-lg">
-                  {{ feedback.text }}
-                </strong>
-                
-                <div class="grid grid-cols-2">
-                  <div class="flex flex-col">
-                    <p class="uppercase text-xs font-bold text-gray-500">página</p>
-                    <a class="font-medium text-sm" >{{ feedback.type }}</a>
-                  </div>
-                  <div class="flex flex-col">
-                    <p class="uppercase text-xs font-bold text-gray-500">Usuário</p>
-                    <p class="font-medium text-sm truncate max-w-xs">{{ feedback.fingersprint }}</p>
-                  </div>
-                </div>
-                <div class="flex flex-col">
-                  <p class="uppercase text-xs font-bold text-gray-500">dispositivo</p>
-                  <p class="font-medium text-sm">{{ feedback.device }}</p>
-                </div>
-              </div>
-            </div>
+        <feedback-filter-loader v-if="state.isFilterDataLoading" />
+        <feedback-filter v-else 
+          :feedbacks-filters="FiltersDataWithColors" 
+          :on-filter="setFilter"
+          :filter-type-active="filterTypeActive" 
+        />
+
+        <div class="flex-1">
+          <div class="space-y-6">
+
+            <feedback-loader v-if="state.isLoading" 
+              :total="5" 
+            />
+            <feedbacks-list v-else 
+              :feedbacks="state.feedbacks" 
+            />
+            
           </div>
         </div>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup>
 import HeaderLogged from '@/components/HeaderLogged'
-import FeedbackFilter from './FeedbackFilter.vue';
+import FeedbackLoader from './FeedbackLoader'
+import FeedbackFilterLoader from './FeedbackFilterLoader';
+import FeedbackFilter from './FeedbackFilter';
+import FeedbacksList from './FeedbacksList.vue';
 
 import services from "../../services"
 import { reactive, watchEffect, computed } from "vue";
 import { useRoute, useRouter } from 'vue-router';
-
-import { ptBR } from 'date-fns/locale/pt-BR'
-import { formatDistanceToNow } from 'date-fns'
 
 const router = useRouter()
 const route = useRoute()
 
 const state = reactive({
   isLoading: false,
+  isFilterDataLoading: false, // remove this
   hasError: false,
   feedbacks: [],
   filtersData: []
-}) 
+})
+
+// TODO: Sinceramente não estou sastifeito com o resultado obtido com a filterloader tem bastante
+// depedencia aqui nesse componente PAI, então é melhor levar todas a logica de loading, error para um componente separado
+// para facilitar a questão da refatoração etc... separar em dois componentes um para ListaDeFeedbacks e outro para FiltroDeFeedbacks
+// toda requisição de API deve tratar todos os status de uma requisição (loading, error, )
 
 const filterTypeActive = computed(() => {
   return route.query.type || 'ALL'
@@ -86,7 +75,7 @@ const filterTypeActive = computed(() => {
 const validFilters = ["ALL", "ISSUE", "IDEA", "OTHER"]
 
 // move to another file
-function getFilterTypeColorAndText(type){
+function getFilterTypeColorAndText(type) {
   switch (type) {
     case "ISSUE":
       return {
@@ -120,31 +109,22 @@ const FiltersDataWithColors = computed(() => {
   });
 });
 
-// TODO: merge the two functions in one to avoid code duplication
-
 async function fetchFeedbacks() {
-  state.isLoading = true
-  try {
-    const response = await services.feedbacks.getFeedbacks()
-    state.feedbacks = response.data
-  } catch (error) {
-    console.error(error)
-    state.hasError = true
-  } finally {
-    state.isLoading = false
-  }
+  const response = await services.feedbacks.getFeedbacks()
+  state.feedbacks = response.data
 }
 
 async function fetchFeedbacksByType(type) {
-    const response = await services.feedbacks.filterByType(type)
-    state.feedbacks = response.data
+  const response = await services.feedbacks.filterByType(type)
+  state.feedbacks = response.data
 }
 
-async function fetchFiltersData(){
+async function fetchFiltersData() {
+  state.isFilterDataLoading = true
   const response = await services.feedbacks.getFiltersData()
   state.filtersData = response.data
+  state.isFilterDataLoading = false
 }
-
 
 function setFilter(type) {
   if (validFilters.includes(type)) {
@@ -164,7 +144,10 @@ watchEffect(async () => {
   }
 })
 
-fetchFeedbacks()
-fetchFiltersData()
+
+Promise.all([
+  fetchFiltersData(),
+  fetchFeedbacks(),
+])
 
 </script>
