@@ -60,9 +60,10 @@ async function isAuthenticated(){
 }
 
 router.beforeEach(async (to) => {
-  if(to.meta.hasAuth && !isAuthenticated()){
+  const authenticated = await isAuthenticated()
+  if(to.meta.hasAuth && !authenticated){
     return {
-      name: "Login"
+      name: "Home"
     }
   }
 })

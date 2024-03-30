@@ -4,7 +4,8 @@ import { useRoute } from 'vue-router';
 
 defineProps({
   onFilter: Function,
-  feedbacksFilters: Array
+  feedbacksFilters: Array,
+  filterTypeActive: String
 })
 
 const route = useRoute()

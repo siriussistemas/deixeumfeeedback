@@ -15,7 +15,7 @@
         <h1 class="mb-9 text-3xl font-black text-brand-darkgray">Listagem</h1>
 
         <div class="flex gap-16">
-          <feedback-filter :feedbacks-filters="FiltersDataWithColors" :on-filter="setFilter" />
+          <feedback-filter :feedbacks-filters="FiltersDataWithColors" :on-filter="setFilter" :filter-type-active="filterTypeActive" />
           
           <div class="flex-1">
             <div class="space-y-6">
@@ -26,7 +26,9 @@
                   >
                     {{ feedback.type }}
                   </span>
-                  <time class="text-sm text-gray-500 font-regular" datetime="">20 segundos atrás</time>
+                  <time class="text-sm text-gray-500 font-regular" datetime="">
+                    {{ formatDistanceToNow(new Date(feedback.created_at), {locale: ptBR, addSuffix: true}) }}
+                  </time>
                 </header>
 
                 <strong class="block font-medium text-lg">
@@ -63,6 +65,9 @@ import services from "../../services"
 import { reactive, watchEffect, computed } from "vue";
 import { useRoute, useRouter } from 'vue-router';
 
+import { ptBR } from 'date-fns/locale/pt-BR'
+import { formatDistanceToNow } from 'date-fns'
+
 const router = useRouter()
 const route = useRoute()
 
@@ -73,6 +78,9 @@ const state = reactive({
   filtersData: []
 }) 
 
+const filterTypeActive = computed(() => {
+  return route.query.type || 'ALL'
+})
 
 // move to another file
 const validFilters = ["ALL", "ISSUE", "IDEA", "OTHER"]

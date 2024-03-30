@@ -5,18 +5,18 @@
     </div>
     <div class="flex">
       <ul class="flex list-none">
-        <li
-          @click="() => router.push({ name: 'Credentials' })"
+        <RouterLink
+          to="Credentials"
           class="px-6 py-2 mr-2 font-bold text-white roundend-full cursor-pointer focus:outline-none"
         >
           Credenciais
-        </li>
-        <li
-          @click="() => router.push({ name: 'Feedbacks' })"
+        </RouterLink>
+        <RouterLink
+          to="Feedbacks"
           class="px-6 py-2 mr-2 font-bold text-white rounded-full cursor-pointer focus:outline-none"
         >
           Feedbacks
-        </li>
+        </RouterLink>
         <li
           @click="logout"
           class="px-6 py-2 font-bold text-brand-main bg-white rounded-full cursor-pointer focus:outline-none"
@@ -29,13 +29,14 @@
 </template>
 
 <script>
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import useStore from '@/composables/useStore'
 import { computed } from 'vue'
 export default {
   setup() {
     const router = useRouter()
-    const store = useStore('user');
+    const store = useStore('user')
+    const route = useRoute()
 
     const logoutLabel = computed(() => {
       return `${store.currentUser.username} (sair)` 
@@ -48,9 +49,15 @@ export default {
       })
     }
 
-    return { router, logoutLabel, logout }
+    return { router, logoutLabel, logout, route }
   }
 }
 </script>
 
-<style lang="scss" scoped></style>
+<style scoped>
+
+.router-link-exact-active {
+  text-decoration: underline 2px;
+}
+
+</style>
