@@ -109,16 +109,9 @@ const FiltersDataWithColors = computed(() => {
   });
 });
 
-async function fetchFeedbacks() {
+async function fetchFeedbacks({type = null} = {}) {
   state.isLoading = true
-  const response = await services.feedbacks.getFeedbacks()
-  state.feedbacks = response.data
-  state.isLoading = false
-}
-
-async function fetchFeedbacksByType(type) {
-  state.isLoading = true
-  const response = await services.feedbacks.filterByType(type)
+  const response = await services.feedbacks.getFeedbacks({type})
   state.feedbacks = response.data
   state.isLoading = false
 }
@@ -139,14 +132,9 @@ function setFilter(type) {
 watchEffect(async () => {
   const type = route.query.type
   if (type && validFilters.includes(type)) {
-    // TODO: remove this else
-    if (type === "ALL") {
-      fetchFeedbacks()
-    } else {
-      fetchFeedbacksByType(type)
+      fetchFeedbacks({type})
     }
-  }
-})
+  })
 
 
 Promise.all([
