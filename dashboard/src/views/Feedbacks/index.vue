@@ -110,13 +110,17 @@ const FiltersDataWithColors = computed(() => {
 });
 
 async function fetchFeedbacks() {
+  state.isLoading = true
   const response = await services.feedbacks.getFeedbacks()
   state.feedbacks = response.data
+  state.isLoading = false
 }
 
 async function fetchFeedbacksByType(type) {
+  state.isLoading = true
   const response = await services.feedbacks.filterByType(type)
   state.feedbacks = response.data
+  state.isLoading = false
 }
 
 async function fetchFiltersData() {
