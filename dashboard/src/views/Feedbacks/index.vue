@@ -23,7 +23,7 @@
           </template>
         </Suspense>
 
-        <div class="flex-1">
+        <div class="flex-1 flex flex-col items-center">
           <div class="space-y-6">
             <feedbacks-list v-if="!state.isLoading && !state.hasError" :feedbacks="state.feedbacks" />
             <feedback-loader v-else-if="state.isLoading" :total="5" />
@@ -31,7 +31,8 @@
             <!-- Handle error state -->
             <feedback-loader v-if="state.isLoadingMoreFeedbacks" :total="3" />
           </div>
-          <button v-if="state.pagination.total != state.feedbacks.length" @click="handleLoadMoreFeedbacks">
+          <button class="px-4 py-1.5 rounded my-6 text-center bg-gray-50 border font-medium"
+            v-if="state.pagination.total != state.feedbacks.length" @click="handleLoadMoreFeedbacks">
             Carregar mais feedbacks
           </button>
         </div>
