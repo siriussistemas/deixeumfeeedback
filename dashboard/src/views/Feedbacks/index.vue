@@ -16,16 +16,19 @@
 
       <div class="flex gap-16">
 
-        <feedback-filter-loader v-if="state.isFilterDataLoading" />
-        <feedback-filter v-else :feedbacks-filters="FiltersDataWithColors" :on-filter="setFilter"
-          :filter-type-active="filterTypeActive" />
+        <Suspense>
+          <feedback-filter />
+          <template #fallback>
+            <feedback-filter-loader />
+          </template>
+        </Suspense>
 
         <div class="flex-1">
           <div class="space-y-6">
             <feedback-loader v-if="state.isLoading" :total="5" />
             <feedbacks-list v-else :feedbacks="state.feedbacks" />
           </div>
-          <button @click="handleLoadMoreFeedbacks">
+          <button v-if="state.pagination.total != state.feedbacks.length" @click="handleLoadMoreFeedbacks">
             Carregar mais feedbacks
           </button>
         </div>
@@ -41,11 +44,11 @@ import FeedbackFilterLoader from './FeedbackFilterLoader';
 import FeedbackFilter from './FeedbackFilter';
 import FeedbacksList from './FeedbacksList.vue';
 
-import services from "../../services"
-import { reactive, computed } from "vue";
-import { useRoute, useRouter } from 'vue-router';
 
-const router = useRouter()
+import services from "../../services"
+import { reactive, watch } from "vue";
+import { useRoute } from 'vue-router';
+
 const route = useRoute()
 
 const state = reactive({
@@ -61,70 +64,20 @@ const state = reactive({
   },
 })
 
-// TODO: Sinceramente não estou sastifeito com o resultado obtido com a filterloader tem bastante
-// depedencia aqui nesse componente PAI, então é melhor levar todas a logica de loading, error para um componente separado
-// para facilitar a questão da refatoração etc... separar em dois componentes um para ListaDeFeedbacks e outro para FiltroDeFeedbacks
-// toda requisição de API deve tratar todos os status de uma requisição (loading, error, )
-
-const filterTypeActive = computed(() => {
-  return route.query.type
-})
-
-// move to another file
-const validFilters = ["ALL", "ISSUE", "IDEA", "OTHER"]
-
-// move to another file
-function getFilterTypeColorAndText(type) {
-  switch (type) {
-    case "ISSUE":
-      return {
-        color: "bg-red-500",
-        text: "Problemas"
-      }
-    case "IDEA":
-      return {
-        color: "bg-green-500",
-        text: "Ideias"
-      }
-    case "OTHER":
-      return {
-        color: "bg-blue-500",
-        text: "Outros"
-      }
-    default:
-      return {
-        color: "bg-gray-500",
-        text: "Todos"
-      }
-  }
-}
-
-const FiltersDataWithColors = computed(() => {
-  return state.filtersData.map(filter => {
-    return {
-      ...filter,
-      ...getFilterTypeColorAndText(filter.type)
-    };
-  });
-});
-
-function setFilter(type) {
-  if (validFilters.includes(type)) {
-    router.push({ query: { type } })
-  }
-}
-
 function handleErrors(error) {
   state.isLoading = false
   state.hasError = !!error
 }
 
-async function fetchFeedbacks() {
+async function fetchFeedbacks({ type }) {
   try {
     state.isLoading = true
+    state.pagination.offset = 0
+    state.pagination.limit = 5
+
     const { data } = await services.feedbacks.getFeedbacks({
       ...state.pagination,
-      type: filterTypeActive.value
+      type
     })
     state.feedbacks = data.results
 
@@ -148,7 +101,7 @@ async function handleLoadMoreFeedbacks() {
 
     const { data } = await services.feedbacks.getFeedbacks({
       ...state.pagination,
-      type: filterTypeActive.value
+      type: route.query.type
     })
 
     if (data.results.length) {
@@ -169,16 +122,10 @@ async function handleLoadMoreFeedbacks() {
   }
 }
 
-// watchEffect(async () => {
-//   const type = route.query.type
-//   if (type && validFilters.includes(type)) {
-//     fetchFeedbacks({ type, ...defaultPagination })
-//   }
-// })
+watch(() => route.query.type, async (type) => {
+  await fetchFeedbacks({ type })
+})
 
-
-// fetchFiltersData(), // move this to inside Filter to handle errors
-fetchFeedbacks()
-// ])
+fetchFeedbacks({})
 
 </script>

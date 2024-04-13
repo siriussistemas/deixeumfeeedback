@@ -9,7 +9,7 @@ export default httpClient => ({
 
         const query = { limit, offset }
 
-        if (type) {
+        if (type && type != 'ALL') {
             query.type = type
         }
 
