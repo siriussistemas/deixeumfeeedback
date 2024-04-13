@@ -17,25 +17,21 @@ const filterTypeActive = computed(() => {
 </script>
 
 <template>
-<div class="min-w-[266px]">
-  <h2 class="text-2xl font-medium mb-4">Filtros</h2>
-  <div class="space-y-1">
-    <div 
-      v-for="filterOption in feedbacksFilters" 
-      :key="filterOption.id"
-      @click="onFilter(filterOption.type)"
-      class="rounded px-4 py-1 flex items-center justify-between"
-      :class="{'bg-gray-100': filterOption.type === filterTypeActive}"
-    >
-    <div class="flex items-center space-x-2">
-      <span class="w-[5px] h-[5px] rounded-full"
-        :class="filterOption.color"
-        >
-      </span>
-      <span class="font-medium text-sm">{{ filterOption.text }}</span>
-    </div>
-    <span class="font-black text-sm opacity-70">{{ filterOption.count }}</span>
+  <div class="min-w-[266px]">
+    <h2 class="text-2xl font-medium mb-4">Filtros</h2>
+    <div class="space-y-1">
+      <div v-for="filterOption in feedbacksFilters" :key="filterOption.id" @click="onFilter(filterOption.type)"
+        class="rounded px-4 py-1 flex items-center justify-between cursor-pointer hover:opacity-70"
+        :class="{ 'bg-gray-100': filterOption.type === filterTypeActive }">
+        <div class="flex items-center space-x-2">
+          <span class="w-[5px] h-[5px] rounded-full" :class="filterOption.color">
+          </span>
+          <span class="font-medium text-sm">{{ filterOption.text }}</span>
+        </div>
+        <span class="font-black text-sm opacity-70" :class="{
+          'text-[#8296FB] opacity-100': filterOption.type === filterTypeActive
+        }">{{ filterOption.count }}</span>
+      </div>
     </div>
   </div>
-</div>
 </template>
