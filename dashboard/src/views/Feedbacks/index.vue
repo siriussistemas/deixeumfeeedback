@@ -25,8 +25,11 @@
 
         <div class="flex-1">
           <div class="space-y-6">
-            <feedback-loader v-if="state.isLoading" :total="5" />
-            <feedbacks-list v-else :feedbacks="state.feedbacks" />
+            <feedbacks-list v-if="!state.isLoading && !state.hasError" :feedbacks="state.feedbacks" />
+            <feedback-loader v-else-if="state.isLoading" :total="5" />
+            <!-- Handle empty state -->
+            <!-- Handle error state -->
+            <feedback-loader v-if="state.isLoadingMoreFeedbacks" :total="3" />
           </div>
           <button v-if="state.pagination.total != state.feedbacks.length" @click="handleLoadMoreFeedbacks">
             Carregar mais feedbacks
@@ -53,6 +56,7 @@ const route = useRoute()
 
 const state = reactive({
   isLoading: false,
+  isLoadingMoreFeedbacks: false,
   isFilterDataLoading: false, // remove this
   hasError: false,
   feedbacks: [],
@@ -66,6 +70,7 @@ const state = reactive({
 
 function handleErrors(error) {
   state.isLoading = false
+  state.isLoadingMoreFeedbacks = false
   state.hasError = !!error
 }
 
@@ -90,6 +95,7 @@ async function fetchFeedbacks({ type }) {
 
     state.pagination = { limit, offset, total: data.count }
     state.isLoading = false
+
   } catch (error) {
     handleErrors(error)
   }
@@ -97,7 +103,8 @@ async function fetchFeedbacks({ type }) {
 
 async function handleLoadMoreFeedbacks() {
   try {
-    state.isLoading = true
+    // state.isLoading = true
+    state.isLoadingMoreFeedbacks = true
 
     const { data } = await services.feedbacks.getFeedbacks({
       ...state.pagination,
@@ -116,7 +123,8 @@ async function handleLoadMoreFeedbacks() {
     const limit = Number(paginationNextParams.get("limit"))
 
     state.pagination = { limit, offset, total: data.count }
-    state.isLoading = false
+    state.isLoadingMoreFeedbacks = false
+
   } catch (error) {
     handleErrors(error)
   }

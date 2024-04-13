@@ -57,12 +57,6 @@ function handleSelect(type) {
 
 }
 
-// function setFilter(type) {
-//   if (validFilters.includes(type)) {
-//     router.push({ query: { type } })
-//   }
-// }
-
 </script>
 
 <template>
