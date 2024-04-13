@@ -50,9 +50,10 @@ import FeedbacksList from './FeedbacksList.vue';
 
 import services from "../../services"
 import { reactive, watch } from "vue";
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 
 const route = useRoute()
+const router = useRouter()
 
 const state = reactive({
   isLoading: false,
@@ -115,25 +116,31 @@ async function handleLoadMoreFeedbacks() {
       state.feedbacks.push(...data.results)
     }
 
-    // extract this to a function
-    const query = data.next.split('?')[1]
-    const paginationNextParams = new URLSearchParams(query)
+    if (data.next) {
 
-    const offset = Number(paginationNextParams.get("offset"))
-    const limit = Number(paginationNextParams.get("limit"))
+      // extract this to a function
+      const query = data.next.split('?')[1]
+      const paginationNextParams = new URLSearchParams(query)
 
-    state.pagination = { limit, offset, total: data.count }
+      const offset = Number(paginationNextParams.get("offset"))
+      const limit = Number(paginationNextParams.get("limit"))
+
+      state.pagination = { limit, offset, total: data.count }
+    }
+
     state.isLoadingMoreFeedbacks = false
 
   } catch (error) {
+    console.error(error)
     handleErrors(error)
   }
 }
 
-watch(() => route.query.type, async (type) => {
-  await fetchFeedbacks({ type })
+watch(() => route.query, async (query) => {
+  await fetchFeedbacks({ type: query.type })
 })
 
 fetchFeedbacks({})
+router.push({ query: {} })
 
 </script>

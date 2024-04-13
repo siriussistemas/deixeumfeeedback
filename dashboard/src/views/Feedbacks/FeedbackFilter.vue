@@ -38,7 +38,6 @@ function transformFiltersStructure(filters) {
 
 try {
   const { data } = await services.feedbacks.getFiltersData()
-  console.log(transformFiltersStructure(data))
   state.filters = transformFiltersStructure(data)
 } catch (err) {
   state.hasError = !!err
@@ -52,7 +51,6 @@ function handleSelect(type) {
     return { ...filter, active: false }
   })
 
-  console.log(type)
   router.push({ query: { type } })
 
 }
