@@ -17,23 +17,17 @@
       <div class="flex gap-16">
 
         <feedback-filter-loader v-if="state.isFilterDataLoading" />
-        <feedback-filter v-else 
-          :feedbacks-filters="FiltersDataWithColors" 
-          :on-filter="setFilter"
-          :filter-type-active="filterTypeActive" 
-        />
+        <feedback-filter v-else :feedbacks-filters="FiltersDataWithColors" :on-filter="setFilter"
+          :filter-type-active="filterTypeActive" />
 
         <div class="flex-1">
           <div class="space-y-6">
-
-            <feedback-loader v-if="state.isLoading" 
-              :total="5" 
-            />
-            <feedbacks-list v-else 
-              :feedbacks="state.feedbacks" 
-            />
-            
+            <feedback-loader v-if="state.isLoading" :total="5" />
+            <feedbacks-list v-else :feedbacks="state.feedbacks" />
           </div>
+          <button @click="handleLoadMoreFeedbacks">
+            Carregar mais feedbacks
+          </button>
         </div>
       </div>
     </div>
@@ -48,7 +42,7 @@ import FeedbackFilter from './FeedbackFilter';
 import FeedbacksList from './FeedbacksList.vue';
 
 import services from "../../services"
-import { reactive, watchEffect, computed } from "vue";
+import { reactive, computed } from "vue";
 import { useRoute, useRouter } from 'vue-router';
 
 const router = useRouter()
@@ -59,7 +53,12 @@ const state = reactive({
   isFilterDataLoading: false, // remove this
   hasError: false,
   feedbacks: [],
-  filtersData: []
+  filtersData: [],
+  pagination: {
+    limit: 5,
+    offset: 0,
+    total: 0
+  },
 })
 
 // TODO: Sinceramente não estou sastifeito com o resultado obtido com a filterloader tem bastante
@@ -68,7 +67,7 @@ const state = reactive({
 // toda requisição de API deve tratar todos os status de uma requisição (loading, error, )
 
 const filterTypeActive = computed(() => {
-  return route.query.type || 'ALL'
+  return route.query.type
 })
 
 // move to another file
@@ -109,37 +108,77 @@ const FiltersDataWithColors = computed(() => {
   });
 });
 
-async function fetchFeedbacks({type = null} = {}) {
-  state.isLoading = true
-  const response = await services.feedbacks.getFeedbacks({type})
-  state.feedbacks = response.data
-  state.isLoading = false
-}
-
-async function fetchFiltersData() {
-  state.isFilterDataLoading = true
-  const response = await services.feedbacks.getFiltersData()
-  state.filtersData = response.data
-  state.isFilterDataLoading = false
-}
-
 function setFilter(type) {
   if (validFilters.includes(type)) {
     router.push({ query: { type } })
   }
 }
 
-watchEffect(async () => {
-  const type = route.query.type
-  if (type && validFilters.includes(type)) {
-      fetchFeedbacks({type})
+function handleErrors(error) {
+  state.isLoading = false
+  state.hasError = !!error
+}
+
+async function fetchFeedbacks() {
+  try {
+    state.isLoading = true
+    const { data } = await services.feedbacks.getFeedbacks({
+      ...state.pagination,
+      type: filterTypeActive.value
+    })
+    state.feedbacks = data.results
+
+    // extract this to a function
+    const query = data.next.split('?')[1]
+    const paginationNextParams = new URLSearchParams(query)
+
+    const offset = Number(paginationNextParams.get("offset"))
+    const limit = Number(paginationNextParams.get("limit"))
+
+    state.pagination = { limit, offset, total: data.count }
+    state.isLoading = false
+  } catch (error) {
+    handleErrors(error)
+  }
+}
+
+async function handleLoadMoreFeedbacks() {
+  try {
+    state.isLoading = true
+
+    const { data } = await services.feedbacks.getFeedbacks({
+      ...state.pagination,
+      type: filterTypeActive.value
+    })
+
+    if (data.results.length) {
+      state.feedbacks.push(...data.results)
     }
-  })
+
+    // extract this to a function
+    const query = data.next.split('?')[1]
+    const paginationNextParams = new URLSearchParams(query)
+
+    const offset = Number(paginationNextParams.get("offset"))
+    const limit = Number(paginationNextParams.get("limit"))
+
+    state.pagination = { limit, offset, total: data.count }
+    state.isLoading = false
+  } catch (error) {
+    handleErrors(error)
+  }
+}
+
+// watchEffect(async () => {
+//   const type = route.query.type
+//   if (type && validFilters.includes(type)) {
+//     fetchFeedbacks({ type, ...defaultPagination })
+//   }
+// })
 
 
-Promise.all([
-  fetchFiltersData(),
-  fetchFeedbacks(),
-])
+// fetchFiltersData(), // move this to inside Filter to handle errors
+fetchFeedbacks()
+// ])
 
 </script>

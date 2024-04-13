@@ -1,6 +1,7 @@
 from rest_framework import viewsets
 
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.pagination import LimitOffsetPagination
 
 from .filters import FeedbacksFilter
 from ..models import Feedback
@@ -19,6 +20,7 @@ class FeedbackViewSet(viewsets.ModelViewSet):
     serializer_class = FeedbackSerializer
     permission_classes = [IsAuthenticated]
     filterset_class = FeedbacksFilter
+    pagination_class = LimitOffsetPagination
 
     def get_queryset(self):
         return self.queryset.filter(user=self.request.user)

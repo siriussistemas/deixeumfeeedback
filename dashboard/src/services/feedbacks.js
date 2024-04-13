@@ -1,17 +1,19 @@
+const defaultPagination = {
+    limit: 5,
+    offset: 0
+}
+
 export default httpClient => ({
+    getFeedbacks: async ({ type, limit, offset } = defaultPagination) => {
+        console.log(type, limit, offset)
 
-    // this is a workaround to pass optional args in EC6 javascript 
-    // is util because i dont need declare getFeedbacks({}) in only call getFeedback()
-    // and if i need pass some params i declare this object getFeedbacks({type: 'idea'})
-    // reference: https://flexiple.com/javascript/optional-parameter-javascript
-    getFeedbacks: async ({type = null} = {}) => {
-        let url = '/feedbacks/'
+        const query = { limit, offset }
 
-        if(type && type != 'ALL'){
-            url += `?type=${type}`
+        if (type) {
+            query.type = type
         }
 
-        const response = await httpClient.get(url)
+        const response = await httpClient.get('/feedbacks', { params: query })
         return {
             data: response.data
         }
