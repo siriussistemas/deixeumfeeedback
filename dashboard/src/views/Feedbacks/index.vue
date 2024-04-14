@@ -44,9 +44,20 @@
 
         <div class="flex-1 flex flex-col items-center">
           <div class="space-y-6">
-            <feedbacks-list v-if="!state.isLoading && !state.hasError" :feedbacks="state.feedbacks" />
-            <feedback-loader v-else-if="state.isLoading" :total="5" />
-            <!-- Handle empty state -->
+
+            <div class="font-bold pt-8 text-gray-800" v-if="!state.isLoading && state.hasError">
+              Ocorreu um erro ao carregar seus feedbacks!😓<br>
+              Se esse persistir entre em contato com o suporte!
+            </div>
+
+            <div class="font-bold pt-8 text-gray-800"
+              v-else-if="!state.isLoading && !state.hasError && state.feedbacks.length === 0">
+              Parece que você não tem nenhum feedback ainda! 😵
+            </div>
+
+            <feedbacks-list v-else :feedbacks="state.feedbacks" />
+
+            <feedback-loader v-if="state.isLoading" :total="5" />
             <!-- Handle error state -->
             <feedback-loader v-if="state.isLoadingMoreFeedbacks" :total="3" />
           </div>
@@ -107,17 +118,20 @@ async function fetchFeedbacks({ type }) {
     })
     state.feedbacks = data.results
 
-    // extract this to a function
-    const query = data.next.split('?')[1]
-    const paginationNextParams = new URLSearchParams(query)
+    if (data.next) {
+      const query = data.next.split('?')[1]
+      const paginationNextParams = new URLSearchParams(query)
 
-    const offset = Number(paginationNextParams.get("offset"))
-    const limit = Number(paginationNextParams.get("limit"))
+      const offset = Number(paginationNextParams.get("offset"))
+      const limit = Number(paginationNextParams.get("limit"))
 
-    state.pagination = { limit, offset, total: data.count }
+      state.pagination = { limit, offset, total: data.count }
+    }
+
     state.isLoading = false
 
   } catch (error) {
+    console.error(error)
     handleErrors(error)
   }
 }
@@ -137,8 +151,6 @@ async function handleLoadMoreFeedbacks() {
     }
 
     if (data.next) {
-
-      // extract this to a function
       const query = data.next.split('?')[1]
       const paginationNextParams = new URLSearchParams(query)
 
