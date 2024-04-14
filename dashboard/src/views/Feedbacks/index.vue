@@ -12,7 +12,26 @@
 
   <div class="flex justify-center w-full h-full">
     <div class="flex flex-col px-4 sm:w-4/5 sm:px-0 max-w-6xl py-10">
-      <h1 class="mb-9 text-3xl font-black text-brand-darkgray">Listagem</h1>
+      <div class="flex flex-col sm:flex-row gap-2 mb-6 sm:gap-0 sm:mb-8">
+        <h1 class="text-3xl font-black text-brand-darkgray">Listagem</h1>
+
+        <div class="relative z-0 flex justify-end flex-1 items-center sm:px-2">
+          <div class="w-full sm:max-w-md">
+            <label htmlFor="search" class="sr-only">
+              Busque
+            </label>
+            <div class="relative">
+              <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                <!-- TODO: Put this icon -->
+                <!-- <MagnifyingGlassIcon class="h-5 w-5 text-gray-400" aria-hidden="true" /> -->
+              </div>
+              <input id="search" name="search"
+                class="block w-full rounded-md border-0 bg-gray-50 py-1.5 pl-10 pr-3 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                placeholder="Busque por um feedback" type="search" />
+            </div>
+          </div>
+        </div>
+      </div>
 
       <div class="flex flex-col sm:flex-row gap-16">
 
