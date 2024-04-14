@@ -1,5 +1,5 @@
 <template>
-      <component :is="props.name" />
+  <component :is="props.name" />
 </template>
 
 <script>
@@ -18,8 +18,8 @@ export default {
       required: true
     }
   },
-  setup (props) {
-    
+  setup(props) {
+
 
     return {
       props
@@ -28,6 +28,4 @@ export default {
 }
 </script>
 
-<style lang="scss" scoped>
-
-</style>
+<style lang="scss" scoped></style>

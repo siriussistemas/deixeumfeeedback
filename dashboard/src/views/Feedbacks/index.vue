@@ -11,10 +11,10 @@
   </div>
 
   <div class="flex justify-center w-full h-full">
-    <div class="flex flex-col w-4/5 max-w-6xl py-10">
+    <div class="flex flex-col px-4 sm:w-4/5 sm:px-0 max-w-6xl py-10">
       <h1 class="mb-9 text-3xl font-black text-brand-darkgray">Listagem</h1>
 
-      <div class="flex gap-16">
+      <div class="flex flex-col sm:flex-row gap-16">
 
         <Suspense>
           <feedback-filter />
@@ -31,7 +31,7 @@
             <!-- Handle error state -->
             <feedback-loader v-if="state.isLoadingMoreFeedbacks" :total="3" />
           </div>
-          <button class="px-4 py-1.5 rounded my-6 text-center bg-gray-50 border font-medium"
+          <button class="px-4 py-1.5 rounded my-6 text-center bg-gray-50 border font-medium hover:bg-gray-100"
             v-if="state.pagination.total != state.feedbacks.length" @click="handleLoadMoreFeedbacks">
             Carregar mais feedbacks
           </button>
