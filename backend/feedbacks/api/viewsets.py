@@ -5,6 +5,7 @@ from rest_framework.pagination import LimitOffsetPagination
 
 from .filters import FeedbacksFilter
 from ..models import Feedback
+
 from .serializers import FeedbackSerializer
 
 from rest_framework.decorators import action
@@ -27,30 +28,24 @@ class FeedbackViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=["GET"])
     def filters_data(self, request):
+        # TODO: study if use get_queryset is a best pratice or not
         summary = self.get_queryset().values("type").annotate(count=Count("type"))
 
         summary = list(summary)
 
         total_count = sum(item["count"] for item in summary)
 
-        types = ["IDEA", "OTHER", "ISSUE"]
-        map_types_count = {}
-        for index, type in enumerate(types):
-            if type not in map_types_count:
-                map_types_count[type] = 0
+        type_counts = {}
 
-            if index <= (len(summary) - 1):
-                filter = summary[index]
-                if filter["type"] in map_types_count:
-                    map_types_count[type] = filter["count"]
-                else:
-                    map_types_count[filter["type"]] = filter["count"]
+        for item in summary:
+            type_counts[item["type"]] = item["count"]
 
-        response = [
-            {"type": "ALL", "count": total_count},
-            {"type": "IDEA", "count": map_types_count.get("IDEA")},
-            {"type": "OTHER", "count": map_types_count.get("OTHER")},
-            {"type": "ISSUE", "count": map_types_count.get("ISSUE")},
+        types = Feedback.FeedbackType.values
+
+        map_types_count = [
+            {"type": type_, "count": type_counts.get(type_, 0)} for type_ in types
         ]
 
-        return Response(data=response, status=status.HTTP_200_OK)
+        map_types_count.insert(0, {"type": "ALL", "count": total_count})
+
+        return Response(data=map_types_count, status=status.HTTP_200_OK)
