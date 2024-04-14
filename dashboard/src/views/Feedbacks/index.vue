@@ -25,7 +25,7 @@
                 <!-- TODO: Put this icon -->
                 <!-- <MagnifyingGlassIcon class="h-5 w-5 text-gray-400" aria-hidden="true" /> -->
               </div>
-              <input id="search" name="search"
+              <input id="search" name="search" v-model="state.searchText"
                 class="block w-full rounded-md border-0 bg-gray-50 py-1.5 pl-10 pr-3 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                 placeholder="Busque por um feedback" type="search" />
             </div>
@@ -92,6 +92,7 @@ const state = reactive({
   isFilterDataLoading: false, // remove this
   hasError: false,
   feedbacks: [],
+  searchText: '',
   filtersData: [],
   pagination: {
     limit: 5,
@@ -106,7 +107,7 @@ function handleErrors(error) {
   state.hasError = !!error
 }
 
-async function fetchFeedbacks({ type }) {
+async function fetchFeedbacks({ type, search }) {
   try {
     state.isLoading = true
     state.pagination.offset = 0
@@ -114,8 +115,11 @@ async function fetchFeedbacks({ type }) {
 
     const { data } = await services.feedbacks.getFeedbacks({
       ...state.pagination,
-      type
+      type,
+      search
     })
+
+    console.log(data.results[0].type)
     state.feedbacks = data.results
 
     if (data.next) {
@@ -125,15 +129,20 @@ async function fetchFeedbacks({ type }) {
       const offset = Number(paginationNextParams.get("offset"))
       const limit = Number(paginationNextParams.get("limit"))
 
-      state.pagination = { limit, offset, total: data.count }
+      state.pagination = { ...state.pagination, limit, offset }
     }
 
+    state.pagination = { ...state.pagination, total: data.count }
     state.isLoading = false
 
   } catch (error) {
     console.error(error)
     handleErrors(error)
   }
+}
+
+async function handleSearchFeedback({ search }) {
+  router.push({ query: { ...route.query, search } })
 }
 
 async function handleLoadMoreFeedbacks() {
@@ -143,7 +152,7 @@ async function handleLoadMoreFeedbacks() {
 
     const { data } = await services.feedbacks.getFeedbacks({
       ...state.pagination,
-      type: route.query.type
+      ...route.query
     })
 
     if (data.results.length) {
@@ -160,6 +169,7 @@ async function handleLoadMoreFeedbacks() {
       state.pagination = { limit, offset, total: data.count }
     }
 
+    state.pagination = { ...state.pagination, total: data.count }
     state.isLoadingMoreFeedbacks = false
 
   } catch (error) {
@@ -168,9 +178,17 @@ async function handleLoadMoreFeedbacks() {
   }
 }
 
-watch(() => route.query, async (query) => {
-  await fetchFeedbacks({ type: query.type })
+watch(() => state.searchText, async (searchText) => {
+  await handleSearchFeedback({ search: searchText })
 })
+
+watch(() => route.query, async (query, oldQuery) => {
+  if (query.type != oldQuery.type)
+    await fetchFeedbacks({ type: query.type })
+  if (query.seach != oldQuery.search)
+    await fetchFeedbacks({ ...query, search: query.search })
+})
+
 
 fetchFeedbacks({})
 router.push({ query: {} })

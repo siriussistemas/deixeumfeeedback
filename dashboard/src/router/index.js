@@ -41,11 +41,11 @@ const router = createRouter({
 })
 
 
-async function isAuthenticated(){
+async function isAuthenticated() {
   try {
     const token = window.localStorage.getItem('token')
 
-    if (!token){
+    if (!token) {
       return false
     }
 
@@ -59,11 +59,13 @@ async function isAuthenticated(){
   return true
 }
 
-router.beforeEach(async (to) => {
-  const authenticated = await isAuthenticated()
-  if(to.meta.hasAuth && !authenticated){
-    return {
-      name: "Home"
+router.beforeEach(async (to, from) => {
+  if (to != from) {
+    const authenticated = await isAuthenticated()
+    if (to.meta.hasAuth && !authenticated) {
+      return {
+        name: "Home"
+      }
     }
   }
 })

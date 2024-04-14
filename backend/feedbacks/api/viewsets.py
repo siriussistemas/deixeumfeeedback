@@ -2,6 +2,8 @@ from rest_framework import viewsets
 
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.pagination import LimitOffsetPagination
+from rest_framework.filters import SearchFilter
+from django_filters.rest_framework import DjangoFilterBackend
 
 from .filters import FeedbacksFilter
 from ..models import Feedback
@@ -22,6 +24,9 @@ class FeedbackViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
     filterset_class = FeedbacksFilter
     pagination_class = LimitOffsetPagination
+    filter_backends = [DjangoFilterBackend, SearchFilter]
+    search_fields = ["text", "page"]
+    filterset_fields = ["type"]
 
     def get_queryset(self):
         return self.queryset.filter(user=self.request.user)

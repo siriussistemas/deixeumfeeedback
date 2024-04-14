@@ -4,8 +4,8 @@ const defaultPagination = {
 }
 
 export default httpClient => ({
-    getFeedbacks: async ({ type, limit, offset } = defaultPagination) => {
-        const query = { limit, offset }
+    getFeedbacks: async ({ type, limit, offset, search } = defaultPagination) => {
+        const query = { limit, offset, search }
 
         if (type && type != 'ALL') {
             query.type = type
