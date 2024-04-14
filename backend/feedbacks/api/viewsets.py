@@ -27,10 +27,30 @@ class FeedbackViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=["GET"])
     def filters_data(self, request):
-        filters_type_count = self.queryset.values("type").annotate(count=Count("type"))
-        total_count = sum(item["count"] for item in filters_type_count)
+        summary = self.get_queryset().values("type").annotate(count=Count("type"))
 
-        filters_type_count = list(filters_type_count)
-        filters_type_count.insert(0, {"type": "ALL", "count": total_count})
+        summary = list(summary)
 
-        return Response(data=filters_type_count, status=status.HTTP_200_OK)
+        total_count = sum(item["count"] for item in summary)
+
+        types = ["IDEA", "OTHER", "ISSUE"]
+        map_types_count = {}
+        for index, type in enumerate(types):
+            if type not in map_types_count:
+                map_types_count[type] = 0
+
+            if index <= (len(summary) - 1):
+                filter = summary[index]
+                if filter["type"] in map_types_count:
+                    map_types_count[type] = filter["count"]
+                else:
+                    map_types_count[filter["type"]] = filter["count"]
+
+        response = [
+            {"type": "ALL", "count": total_count},
+            {"type": "IDEA", "count": map_types_count.get("IDEA")},
+            {"type": "OTHER", "count": map_types_count.get("OTHER")},
+            {"type": "ISSUE", "count": map_types_count.get("ISSUE")},
+        ]
+
+        return Response(data=response, status=status.HTTP_200_OK)
