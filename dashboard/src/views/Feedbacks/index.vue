@@ -17,7 +17,7 @@
 
         <div class="relative z-0 flex justify-end flex-1 items-center sm:px-2">
           <div class="w-full sm:max-w-md">
-            <label htmlFor="search" class="sr-only">
+            <label class="sr-only">
               Busque
             </label>
             <div class="relative">
@@ -26,8 +26,8 @@
                 <!-- <MagnifyingGlassIcon class="h-5 w-5 text-gray-400" aria-hidden="true" /> -->
               </div>
               <input id="search" name="search" v-model="state.searchText"
-                class="block w-full rounded-md border-0 bg-gray-50 py-1.5 pl-10 pr-3 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                placeholder="Busque por um feedback" type="search" />
+                     class="block w-full rounded-md border-0 bg-gray-50 py-1.5 pl-10 pr-3 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                     placeholder="Busque por um feedback" type="search" />
             </div>
           </div>
         </div>
@@ -42,18 +42,18 @@
           </template>
         </Suspense>
 
-        <div class="flex-1 flex flex-col items-center">
+        <div class="flex-1 flex flex-col">
           <div class="space-y-6">
 
-            <div class="font-bold pt-8 text-gray-800" v-if="!state.isLoading && state.hasError">
+            <div class="font-bold pt-8 text-gray-800 text-center" v-if="!state.isLoading && state.hasError">
               Ocorreu um erro ao carregar seus feedbacks!😓<br>
               Se esse persistir entre em contato com o suporte!
             </div>
 
-            <div class="font-bold pt-8 text-gray-800"
-              v-else-if="!state.isLoading && !state.hasError && state.feedbacks.length === 0">
-              Parece que você não tem nenhum feedback ainda! 😵
-            </div>
+            <!--            <div class="font-bold pt-8 text-gray-800"-->
+            <!--                 v-else-if="!state.isLoading && !state.hasError && state.feedbacks.length === 0">-->
+            <!--              Parece que você não tem nenhum feedback ainda! 😵-->
+            <!--            </div>-->
 
             <feedbacks-list v-else :feedbacks="state.feedbacks" />
 
@@ -62,7 +62,7 @@
             <feedback-loader v-if="state.isLoadingMoreFeedbacks" :total="3" />
           </div>
           <button class="px-4 py-1.5 rounded my-6 text-center bg-gray-50 border font-medium hover:bg-gray-100"
-            v-if="state.pagination.total != state.feedbacks.length" @click="handleLoadMoreFeedbacks">
+                  v-if="state.pagination.total != state.feedbacks.length" @click="handleLoadMoreFeedbacks">
             Carregar mais feedbacks
           </button>
         </div>
@@ -74,14 +74,14 @@
 <script setup>
 import HeaderLogged from '@/components/HeaderLogged'
 import FeedbackLoader from './FeedbackLoader'
-import FeedbackFilterLoader from './FeedbackFilterLoader';
-import FeedbackFilter from './FeedbackFilter';
-import FeedbacksList from './FeedbacksList.vue';
+import FeedbackFilterLoader from './FeedbackFilterLoader'
+import FeedbackFilter from './FeedbackFilter'
+import FeedbacksList from './FeedbacksList.vue'
 
 
-import services from "../../services"
-import { reactive, watch } from "vue";
-import { useRoute, useRouter } from 'vue-router';
+import services from '../../services'
+import { reactive, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 
 const route = useRoute()
 const router = useRouter()
@@ -98,7 +98,7 @@ const state = reactive({
     limit: 5,
     offset: 0,
     total: 0
-  },
+  }
 })
 
 function handleErrors(error) {
@@ -119,15 +119,14 @@ async function fetchFeedbacks({ type, search }) {
       search
     })
 
-    console.log(data.results[0].type)
     state.feedbacks = data.results
 
     if (data.next) {
       const query = data.next.split('?')[1]
       const paginationNextParams = new URLSearchParams(query)
 
-      const offset = Number(paginationNextParams.get("offset"))
-      const limit = Number(paginationNextParams.get("limit"))
+      const offset = Number(paginationNextParams.get('offset'))
+      const limit = Number(paginationNextParams.get('limit'))
 
       state.pagination = { ...state.pagination, limit, offset }
     }
@@ -163,8 +162,8 @@ async function handleLoadMoreFeedbacks() {
       const query = data.next.split('?')[1]
       const paginationNextParams = new URLSearchParams(query)
 
-      const offset = Number(paginationNextParams.get("offset"))
-      const limit = Number(paginationNextParams.get("limit"))
+      const offset = Number(paginationNextParams.get('offset'))
+      const limit = Number(paginationNextParams.get('limit'))
 
       state.pagination = { limit, offset, total: data.count }
     }

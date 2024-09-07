@@ -1,8 +1,7 @@
 <script setup>
-import { reactive } from 'vue';
-import services from '../../services';
-import { routeLocationKey } from 'vue-router';
-import router from '../../router';
+import { reactive } from 'vue'
+import services from '../../services'
+import router from '../../router'
 
 const state = reactive({
   hasError: false,
@@ -31,7 +30,7 @@ function transformFiltersStructure(filters) {
       label: LABELS[key],
       color: COLORS[key],
       count: filter.count,
-      active: key == 'all' ? true : false
+      active: key === 'all'
     }
   })
 }
@@ -42,7 +41,15 @@ try {
 } catch (err) {
   state.hasError = !!err
 }
+
+function checkIfFilterIsActive(type) {
+  const filter = state.filters.find(filter => filter.type === type)
+  return filter.count === 0 && filter.label !== LABELS.all
+}
+
 function handleSelect(type) {
+  if (checkIfFilterIsActive(type)) return
+
   state.filters = state.filters.map((filter) => {
     // refact this to my own implementation
     if (filter.type === type) {
@@ -55,6 +62,7 @@ function handleSelect(type) {
 
 }
 
+
 </script>
 
 <template>
@@ -62,8 +70,12 @@ function handleSelect(type) {
     <h2 class="text-2xl font-medium mb-4">Filtros</h2>
     <div class="space-y-1">
       <div v-for="filter in state.filters" :key="filter.label" @click="handleSelect(filter.type)"
-        class="rounded px-4 py-1 flex items-center justify-between cursor-pointer hover:opacity-70"
-        :class="{ 'bg-gray-200 bg-opacity-50': filter.active }">
+           class="rounded px-4 py-1 flex items-center justify-between"
+           :class="[
+             { 'bg-gray-200 bg-opacity-50': filter.active },
+             checkIfFilterIsActive(filter.type) ? 'cursor-not-allowed' : 'cursor-pointer hover:opacity-70'
+           ]"
+      >
         <div class="flex items-center space-x-2">
           <span class="w-[5px] h-[5px] rounded-full" :class="[filter.color.text, filter.color.bg]"></span>
           <span class="font-medium text-sm">
