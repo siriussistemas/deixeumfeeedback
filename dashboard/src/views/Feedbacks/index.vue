@@ -43,28 +43,19 @@
         </Suspense>
 
         <div class="flex-1 flex flex-col">
-          <div class="space-y-6">
-
+          <div class="space-y-6 pb-8">
             <div class="font-bold pt-8 text-gray-800 text-center" v-if="!state.isLoading && state.hasError">
               Ocorreu um erro ao carregar seus feedbacks!😓<br>
               Se esse persistir entre em contato com o suporte!
             </div>
-
-            <!--            <div class="font-bold pt-8 text-gray-800"-->
-            <!--                 v-else-if="!state.isLoading && !state.hasError && state.feedbacks.length === 0">-->
-            <!--              Parece que você não tem nenhum feedback ainda! 😵-->
-            <!--            </div>-->
-
-            <feedbacks-list v-else :feedbacks="state.feedbacks" />
-
+            <div class="font-bold pt-8 text-gray-800"
+                 v-else-if="!state.isLoading & state.feedbacks.length === 0">
+              Parece que você não tem nenhum feedback ainda! 😵
+            </div>
             <feedback-loader v-if="state.isLoading" :total="5" />
-            <!-- Handle error state -->
+            <feedbacks-list v-else :feedbacks="state.feedbacks" />
             <feedback-loader v-if="state.isLoadingMoreFeedbacks" :total="3" />
           </div>
-          <button class="px-4 py-1.5 rounded my-6 text-center bg-gray-50 border font-medium hover:bg-gray-100"
-                  v-if="state.pagination.total != state.feedbacks.length" @click="handleLoadMoreFeedbacks">
-            Carregar mais feedbacks
-          </button>
         </div>
       </div>
     </div>
@@ -78,9 +69,8 @@ import FeedbackFilterLoader from './FeedbackFilterLoader'
 import FeedbackFilter from './FeedbackFilter'
 import FeedbacksList from './FeedbacksList.vue'
 
-
 import services from '../../services'
-import { reactive, watch } from 'vue'
+import { onBeforeUnmount, onMounted, reactive, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
 const route = useRoute()
@@ -99,6 +89,28 @@ const state = reactive({
     offset: 0,
     total: 0
   }
+})
+
+
+function handleOnScroll(event) {
+  const { scrollTop, scrollHeight, clientHeight } = event.target.documentElement
+
+  if(state.isLoading || state.isLoadingMoreFeedbacks) return
+  if(state.pagination.total === state.feedbacks.length) return
+  if (state.feedbacks.length === 0) return
+
+  if (scrollTop + clientHeight >= scrollHeight) {
+    handleLoadMoreFeedbacks()
+  }
+}
+
+onMounted(() => {
+  // console.log("hello world!")
+  window.addEventListener("scroll", handleOnScroll)
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener("scroll", handleOnScroll)
 })
 
 function handleErrors(error) {
@@ -146,7 +158,6 @@ async function handleSearchFeedback({ search }) {
 
 async function handleLoadMoreFeedbacks() {
   try {
-    // state.isLoading = true
     state.isLoadingMoreFeedbacks = true
 
     const { data } = await services.feedbacks.getFeedbacks({
@@ -154,7 +165,7 @@ async function handleLoadMoreFeedbacks() {
       ...route.query
     })
 
-    if (data.results.length) {
+    if (data.results.length > 0) {
       state.feedbacks.push(...data.results)
     }
 
@@ -190,6 +201,5 @@ watch(() => route.query, async (query, oldQuery) => {
 
 
 fetchFeedbacks({})
-router.push({ query: {} })
 
 </script>

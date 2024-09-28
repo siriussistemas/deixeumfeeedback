@@ -22,13 +22,11 @@ const state = reactive({
 async function handleToggleOpen() {
   state.isClosing = true
 
-  // TODO: make a function to make this wait()
   await new Promise(resolve => {
     setTimeout(resolve, 200)
   })
 
   state.isOpen = true
-
   state.isClosing = false
 }
 
@@ -39,7 +37,6 @@ async function handleToggleOpen() {
     <header class="flex items-center justify-between">
       <badge :type="feedback.type" />
       <time class="text-sm text-gray-500 font-regular" :datetime="new Date(feedback.created_at).toISOString()">
-        <!-- TODO: Move this function to a utils -->
         {{ formatDistanceToNow(new Date(feedback.created_at), { locale: ptBR, addSuffix: true }) }}
       </time>
     </header>
@@ -57,7 +54,7 @@ async function handleToggleOpen() {
       </div>
       <div class="flex flex-col">
         <p class="uppercase text-xs font-bold text-gray-500">Usuário</p>
-        <p class="font-medium text-sm truncate max-w-xs">{{ feedback.fingersprint }}</p>
+        <p class="font-medium text-sm truncate max-w-xs" :title="feedback.fingersprint">{{ feedback.fingersprint }}</p>
       </div>
       <div class="flex flex-col">
         <p class="uppercase text-xs font-bold text-gray-500">dispositivo</p>
